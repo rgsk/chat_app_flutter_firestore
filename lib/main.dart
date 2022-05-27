@@ -1,11 +1,35 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:test_app/screens/calls.dart';
 import 'package:test_app/screens/chats.dart';
 import 'package:test_app/screens/people.dart';
-import 'package:test_app/screens/settings.dart';
+import 'package:test_app/screens/settings_screen.dart';
 
-void main() {
+const useEmulator = true;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  if (useEmulator) {
+    _connectToFirebaseEmulator();
+  }
   runApp(const MyApp());
+}
+
+void _connectToFirebaseEmulator() async {
+  const firestorePort = 8089;
+  const authPort = 9009;
+  final localhost = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+  FirebaseFirestore.instance.settings = Settings(
+    host: '$localhost:$firestorePort',
+    sslEnabled: false,
+    persistenceEnabled: false,
+  );
+  await FirebaseAuth.instance.useAuthEmulator(localhost, authPort);
 }
 
 class MyApp extends StatelessWidget {
@@ -16,7 +40,7 @@ class MyApp extends StatelessWidget {
     return CupertinoApp(
       home: HomePage(),
       theme: CupertinoThemeData(
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         primaryColor: Color(0xFF08C187),
       ),
     );
@@ -29,7 +53,7 @@ class HomePage extends StatelessWidget {
     Chats(),
     Calls(),
     People(),
-    Settings(),
+    SettingsScreen(),
   ];
   @override
   Widget build(BuildContext context) {
